@@ -42,7 +42,7 @@ A Streamlit web application that calculates trading commissions, taxes, and net 
 
 3. **Run the application**:
    ```bash
-   streamlit run trading_commissions_app.py
+   streamlit run app.py
    ```
 
 4. **Open your browser** to `http://localhost:8501`
@@ -51,7 +51,7 @@ A Streamlit web application that calculates trading commissions, taxes, and net 
 
 ```
 trading-commissions-calculator/
-├── trading_commissions_app.py  # Main Streamlit application
+├── app.py  # Main Streamlit application
 ├── requirements.txt            # Python dependencies
 ├── README.md                  # Project documentation
 ├── .gitignore                 # Git ignore rules
