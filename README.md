@@ -11,11 +11,11 @@ A Streamlit web application that calculates trading commissions, taxes, and net 
 - **CSV Import**: Process trade data from popular Indian brokers
 - **Commission Calculation**: Automatically calculates all applicable charges:
   - Brokerage fees (0.03%, max ₹20 per order)
-  - Transaction charges (0.00325%)
+  - Transaction charges (0.00297%)
   - GST (18% on brokerage + transaction charges)
   - SEBI charges (0.0001%)
   - STT (0.025% on sell value)
-  - Stamp duty (0.002% on buy value)
+  - Stamp duty (0.003% on buy value)
 - **Profit/Loss Analysis**: Calculates net P&L after all commissions
 - **Visual Dashboard**: Clean, intuitive interface with metric cards and data visualizations
 - **Trade Breakdown**: Detailed view of processed trades with commission allocations
