@@ -135,7 +135,13 @@ def process_trades_data(orders):
             continue
             
         # Get price and calculate trade value
-        price = float(order['Avg. price'])
+        price_str = str(order['Avg. price'])
+        try:
+            # Extract first numeric value before '/' or any non-numeric
+            price = float(price_str.split('/')[0].replace(',', '').strip())
+        except:
+            price = 0.0
+            
         trade_value = qty * price
         
         # Initialize commission calculator
@@ -237,9 +243,16 @@ if uploaded_file is not None:
         with col5:
             st.markdown('<div class="metric-card">', unsafe_allow_html=True)
             # Determine the class for coloring
-            pnl_class = "profit-positive" if results['net_profit_after_commissions'] >= 0 else "profit-negative"
-            st.markdown(f"Net P&L: <span class='{pnl_class}'>₹{results['net_profit_after_commissions']:,.2f}</span>", 
-                       unsafe_allow_html=True)
+            net_pnl_value = results['net_profit_after_commissions']
+            delta_color = "normal"
+            if net_pnl_value >= 0:
+                delta_color = "off"  # disables delta color change
+                net_pnl_display = f"🟢 ₹{net_pnl_value:,.2f}"
+            else:
+                delta_color = "off"
+                net_pnl_display = f"🔴 ₹{net_pnl_value:,.2f}"
+
+            st.metric("Net P&L", net_pnl_display, delta=None)
             st.markdown('</div>', unsafe_allow_html=True)
             
         with col6:
