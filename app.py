@@ -116,61 +116,53 @@ def process_trades_data(orders):
     
     # Process each order
     for index, order in orders.iterrows():
-        # Skip cancelled orders
-        if order['Status'] == 'CANCELLED':
-            continue
-            
-        # Extract quantity (handle the "X/X" format)
+        # Always extract traded quantity (first part of Qty.)
         try:
             qty_str = str(order['Qty.'])
-            if '/' in qty_str:
-                qty = int(qty_str.split('/')[0])
-            else:
-                qty = int(qty_str)
+            traded_qty = int(qty_str.split('/')[0].strip())
         except:
-            qty = 0
-            
-        # Skip if quantity is zero
-        if qty == 0:
+            traded_qty = 0
+
+        # Skip if traded quantity is zero
+        if traded_qty == 0:
             continue
-            
+
         # Get price and calculate trade value
         price_str = str(order['Avg. price'])
         try:
-            # Extract first numeric value before '/' or any non-numeric
             price = float(price_str.split('/')[0].replace(',', '').strip())
         except:
             price = 0.0
-            
-        trade_value = qty * price
-        
+
+        trade_value = traded_qty * price
+
         # Initialize commission calculator
         C = Commissions()
-        
+
         # Calculate based on trade type
         if order['Type'] == 'BUY':
             C.calculate_commissions(trade_value, 0)
             total_buy_value += trade_value
-            total_buy_quantity += qty
+            total_buy_quantity += traded_qty
             pnl = 0  # P&L will be calculated when we match with sells
         elif order['Type'] == 'SELL':
             C.calculate_commissions(0, trade_value)
             total_sell_value += trade_value
-            total_sell_quantity += qty
+            total_sell_quantity += traded_qty
             pnl = 0  # P&L will be calculated when we match with buys
-        
+
         Total_commissions += C.Total_value
-        
+
         # Add to commission breakdown
         for key in commission_breakdown:
             commission_breakdown[key] += C.commission_breakdown[key]
-        
+
         # Store processed trade
         processed_trades.append({
             'Time': order['Time'],
             'Type': order['Type'],
             'Instrument': order['Instrument'],
-            'Qty': qty,
+            'Qty': traded_qty,
             'Price': price,
             'Value': trade_value,
             'Commission': C.Total_value,
