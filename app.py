@@ -193,45 +193,58 @@ if uploaded_file is not None:
     try:
         # Read the CSV file
         orders = pd.read_csv(uploaded_file)
-        
-        # Clean up column names
         orders.columns = orders.columns.str.strip()
-        
+
+        # Normalize column names for trades.csv or orders.csv
+        col_map = {}
+        if 'Fill time' in orders.columns:
+            col_map['Fill time'] = 'Time'
+        if 'Avg. Price' in orders.columns:
+            col_map['Avg. Price'] = 'Avg. price'
+        if 'Trade ID' in orders.columns:
+            col_map['Trade ID'] = 'Trade ID'  # not used, but for completeness
+        # Rename columns if needed
+        if col_map:
+            orders = orders.rename(columns=col_map)
+        # Add Status column if missing (assume COMPLETE)
+        if 'Status' not in orders.columns:
+            orders['Status'] = 'COMPLETE'
+
         # Display the raw data
         st.subheader("Uploaded Trades Data")
         st.dataframe(orders, use_container_width=True)
-        
+
         # Process the data
         results = process_trades_data(orders)
-        
+
         # Display results in columns
         col1, col2, col3 = st.columns(3)
-        
+
         with col1:
             st.markdown('<div class="metric-card">', unsafe_allow_html=True)
             st.metric("Total Buy Value", f"₹{results['total_buy_value']:,.2f}")
             st.metric("Total Buy Quantity", f"{results['total_buy_quantity']}")
             st.markdown('</div>', unsafe_allow_html=True)
-            
+
         with col2:
             st.markdown('<div class="metric-card">', unsafe_allow_html=True)
             st.metric("Total Sell Value", f"₹{results['total_sell_value']:,.2f}")
             st.metric("Total Sell Quantity", f"{results['total_sell_quantity']}")
             st.markdown('</div>', unsafe_allow_html=True)
-            
+
         with col3:
             st.markdown('<div class="metric-card">', unsafe_allow_html=True)
             st.metric("Gross P&L", f"₹{results['net_profit_before_commissions']:,.2f}", 
                      delta_color="inverse")
             st.markdown('</div>', unsafe_allow_html=True)
-        
+
         col4, col5, col6 = st.columns(3)
-        
+
         with col4:
             st.markdown('<div class="metric-card">', unsafe_allow_html=True)
             st.metric("Total Commissions", f"₹{results['total_commissions']:,.2f}")
             st.markdown('</div>', unsafe_allow_html=True)
-            
+
         with col5:
             st.markdown('<div class="metric-card">', unsafe_allow_html=True)
             # Determine the class for coloring
@@ -246,7 +259,7 @@ if uploaded_file is not None:
 
             st.metric("Net P&L", net_pnl_display, delta=None)
             st.markdown('</div>', unsafe_allow_html=True)
-            
+
         with col6:
             st.markdown('<div class="metric-card">', unsafe_allow_html=True)
             turnover = results['total_buy_value'] + results['total_sell_value']
@@ -256,7 +269,7 @@ if uploaded_file is not None:
             else:
                 st.metric("Commission % of Turnover", "0%")
             st.markdown('</div>', unsafe_allow_html=True)
-        
+
         # Display commission breakdown
         st.subheader("Commission Breakdown")
         breakdown_df = pd.DataFrame.from_dict(results['commission_breakdown'], orient='index', columns=['Amount (₹)'])
@@ -265,22 +278,22 @@ if uploaded_file is not None:
             'Amount (₹)': '₹{:,.2f}',
             'Percentage': '{:.2f}%'
         }), use_container_width=True)
-        
+
         # Display processed trades
         st.subheader("Processed Trades")
         st.dataframe(results['processed_trades'], use_container_width=True)
-        
+
         # Display summary
         st.subheader("Summary")
         if results['net_profit_after_commissions'] >= 0:
             st.success(f"🎉 Your net profit after commissions is ₹{results['net_profit_after_commissions']:,.2f}")
         else:
             st.error(f"📉 Your net loss after commissions is ₹{abs(results['net_profit_after_commissions']):,.2f}")
-            
+
         if results['net_profit_before_commissions'] != 0:
             commission_impact = (abs(results['total_commissions'] / results['net_profit_before_commissions']) * 100)
             st.info(f"💡 Commissions reduced your P&L by {commission_impact:.2f}%")
-        
+
     except Exception as e:
         st.error(f"Error processing file: {str(e)}")
         st.info("Please check that your CSV file has the correct format and try again.")
